@@ -46,6 +46,9 @@ def imdbRequest ( name ):
 		url = 'http://www.omdbapi.com/?t=' + urllib.quote_plus(name)
 		request = requests.get(url)
 		json_data = json.loads(request.text)
+		if json_data['Response'] == "False":
+			print "Movie not found on IMDB"
+			return
 		imdbID = json_data['imdbID']
 		couchPotatoSearch(name, imdbID)
 	except requests.exceptions.RequestException, e:
@@ -90,11 +93,12 @@ def couchPotatoSearch (name, imdbID):
 		json_data  = json_data.replace('\\', '').strip()
 		json_data = json_data[1:-1]
 		json_data = json.loads(json_data)
+		name = name.replace('\n', '').strip()
 		csvfile.close()
 		if os.path.isfile("movies.csv"):
 		        os.remove("movies.csv")
 		if count == 0:
-			print bcolors.OKGREEN + "Movie not found in the CouchPotato Database. Adding now!"+ bcolors.ENDC
+			print bcolors.OKGREEN + "Movie (" + name + ") not found in the CouchPotato Database. Adding now!"+ bcolors.ENDC
 			couchPotatoAdd(imdbID)
 		else:
 			print bcolors.WARNING + "The following movies were found in your library that matched your search terms" + bcolors.ENDC
