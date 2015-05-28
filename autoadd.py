@@ -111,14 +111,16 @@ def couchPotatoSearch (name, imdbID):
 	    print 'FAIL:', e
 def clearWanted():
 	try:
-		url = couchPotatoURL + '/couchpotato/api/' + couchPotatoAPIKey + 'media.list?release_status=downloaded'
-		request = requests.get(url)
-		print request.text
+		url = couchPotatoURL + '/couchpotato/api/' + couchPotatoAPIKey + '/media.list?release_status=available'
+		request = requests.get(url, auth=('', ''))
 		json_data = json.loads(request.text)
 		count = json_data['total']
 		for i in range(0, count):
-			couchPotatoID = json_data['movies'][i]['info']['_id']
-			print couchPotatoID
+			couchPotatoID = json_data['movies'][i]['_id']
+			couchPotatoTitle = json_data['movies'][i]['title']
+			url = couchPotatoURL + '/couchpotato/api/' + couchPotatoAPIKey + '/media.delete?delete_from=wanted&id=' + couchPotatoID
+			request = requests.get(url, auth=('', ''))
+			print bcolors.OKGREEN + "Movie Title: " + couchPotatoTitle + "removed from Wanted List" + bcolors.ENDC
 	except requests.exceptions.RequestException, e:
 	    print 'FAIL:', e
 
