@@ -14,14 +14,13 @@ import os
 import jsonrpc
 import sqlite3
 from requests.auth import HTTPBasicAuth
+import argparse
 
 configParser = ConfigParser.RawConfigParser()   
 configFilePath = r'config'
 configParser.read(configFilePath)
 couchPotatoURL = configParser.get('couchpotato', 'URL')
 couchPotatoAPIKey = configParser.get('couchpotato', 'APIKey')
-nzbGetAPIUser = configParser.get('nzbget', 'user')
-nzbGetAPIPassword = configParser.get('nzbget', 'password')
 
 class bcolors:
     HEADER = '\033[95m'
@@ -110,7 +109,25 @@ def couchPotatoSearch (name, imdbID):
 		#print json.dumps(json_data[0], sort_keys=True, indent=4)
 	except requests.exceptions.RequestException, e:
 	    print 'FAIL:', e
+def clearWanted():
+	try:
+		url = couchPotatoURL + '/couchpotato/api/' + couchPotatoAPIKey + 'media.list?release_status=downloaded'
+		request = requests.get(url)
+		print request.text
+		json_data = json.loads(request.text)
+		count = json_data['total']
+		for i in range(0, count):
+			couchPotatoID = json_data['movies'][i]['info']['_id']
+			print couchPotatoID
+	except requests.exceptions.RequestException, e:
+	    print 'FAIL:', e
 
-with open('movielist.txt') as f:
-	for line in f:
-	 	imdbRequest (line)
+parser = argparse.ArgumentParser(description='CouchPotato Auto Add')
+parser.add_argument('-c','--clearwanted', help='Clear Wanted List',required=False)
+args = parser.parse_args()
+if args.clearwanted == "true":
+	clearWanted()
+else:
+	with open('movielist.txt') as f:
+		for line in f:
+		 	imdbRequest (line)
